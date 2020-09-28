@@ -1,7 +1,7 @@
 # utools-jenkins
 
-+ 使用 `jk-set` 来设置jenkins的URL, 用户名密码(可选)
-+ 使用 `jk` 来搜索jenkins的job
++ 使用 `jk-set` 或者 `jenkins-set` 来设置jenkins的URL, 用户名密码(可选)
++ 使用 `jk` 或者 `jenkins` 来搜索jenkins的job
 
 搜索jenkins页面
 ![jk](jk.png)
