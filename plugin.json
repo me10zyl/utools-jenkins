@@ -1,0 +1,21 @@
+{
+	"pluginName": "jenkins",
+	"description": "jenkins插件",
+	"version": "0.0.1",
+	"preload": "preload.js",
+	"main" : "index.html",
+	"logo": "jenkins.png",
+	"homepage" : "https://github.com/me10zyl/utools-jenkins",
+	"features": [
+		{
+		  "code": "jenkins",
+		  "explain": "搜索jenkins",
+		  "cmds":["jenkins", "jk"]
+		},{
+			"code": "jenkins-set",
+			"explain": "设置jenkins URL、用户名、密码",
+			"cmds":["jenkins-set", "jk-set"]
+		}
+	],
+	"author": "me10zyl"
+}

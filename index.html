@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="jquery.min.js"></script>
+<script src="moment.min.js"></script>
+<style>
+    .input{
+        width: 100%;
+        height: 50px;
+        border: none;
+        outline: none;
+        font-size: 20px;
+    }
+    ul{
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .row{
+        display: inline-block;
+    }
+    a{
+        text-underline: none;
+
+        color: #453838;
+    }
+</style>
+</head>
+<body>
+<input class="input" placeholder="JOB名称"/>
+<a href="javascript:void(0)" onclick="setting()">Jenkins设置</a>
+<span id="jenkinsURL"></span>
+<hr/>
+<div style="overflow: auto">
+<ul id="jobs">
+</ul>
+</div>
+<li id="clone" style="display: none" class="job">
+    <div class="row" style="width: 40%">
+        <img class="jobColor" width="16" height="16"/>
+        <a href="javascript:void(0)" target="_blank" class="jobName">HelloWorld</a>
+    </div>
+    <div class="row" style="width: 30%;margin-right: 10px">
+        <span class="lastBuildTime">N/A</span>
+    </div>
+   <!-- <div class="jobBtns row" style="width: 20%">
+        <img style="width: 16px; height: 16px; margin-right: 2px;margin-top: 1px" class="buildImg" />
+        <a class="build" href="javascript:void(0)">构建</a>
+    </div>-->
+</li>
+<script>
+    utools.onPluginReady(function(){
+        let config = utools.db.get('jenkins-0');
+        let baseURL = config && config.data ? config.data.url : null;
+        let username = config && config.data ? config.data.username : null;
+        let password = config && config.data ? config.data.password : null;
+
+        $.xhrPool = [];
+        $.xhrPool.abortAll = function() {
+            $(this).each(function(i, jqXHR) {   //  cycle through list of recorded connection
+                console.log('abort', jqXHR)
+                jqXHR.abort();  //  aborts connection
+                $.xhrPool.splice(i, 1); //  removes from list by index
+            });
+        }
+        $.ajaxSetup({
+            beforeSend: function(jqXHR) {
+                console.log('beforeSend')
+                $.xhrPool.push(jqXHR);
+                jqXHR.setRequestHeader ("Authorization", "Basic " + btoa(username + ":" + password));
+            }, //  annd connection to list
+            complete: function(jqXHR) {
+                var i = $.xhrPool.indexOf(jqXHR);   //  get index for current connection completed
+                if (i > -1) $.xhrPool.splice(i, 1); //  removes from list by index
+            }
+        });
+
+
+        console.log(baseURL, username, password);
+
+        function setting(){
+            loadConfigPage();
+        }
+
+        function getJob(job){
+            let jobLi = $("#clone").clone().removeAttr("id").removeAttr("style");
+            jobLi.find(".jobName").text(job.name).prop("href", job.url).click(function(){
+                utools.shellOpenExternal(job.url);
+            });
+            let colorPng = baseURL + "/static/68283e49/images/16x16/"+job.color+".png";
+            if(job.color == 'blue_anime'){
+                colorPng = baseURL + "/static/68283e49/images/16x16/"+job.color+".gif";
+            }
+            jobLi.find(".jobColor").prop("src", colorPng)
+            jobLi.find(".buildImg").prop("src", baseURL + '/static/68283e49/images/24x24/clock.png')
+            jobLi.find(".build").click(function(){
+                jenkins.buildJob(job.name, {"branch": "release"});
+            })
+            return jobLi;
+        }
+
+        function setJob(job, jobLi){
+            let lastBuild = job.detail.lastBuildDetail;
+            job.color = job.detail.color;
+            if(lastBuild) {
+                jobLi.find(".lastBuildTime").text(moment(new Date(lastBuild.timestamp)).format('YYYY-MM-DD HH:mm:ss'))
+                let colorPng = baseURL + "/static/68283e49/images/16x16/"+job.color+".png";
+                if(job.color == 'blue_anime'){
+                    colorPng = baseURL + "/static/68283e49/images/16x16/"+job.color+".gif";
+                }
+                jobLi.find(".jobColor").prop("src", colorPng)
+            }
+        }
+
+        class Jenkins{
+            async listJobs(){
+                let result = await $.ajax({
+                    dataType: 'json',
+                    url : baseURL + "/api/json"
+                })
+                return result;
+            }
+
+            async getJob(jobName){
+                let result = await $.ajax({
+                    dataType: 'json',
+                    url : baseURL + "/job/"+jobName+"/api/json"
+                })
+                return result;
+            }
+
+            async buildJob(jobName, parameters){
+                if(parameters != null){
+
+                    let result = await $.ajax({
+                        dataType: 'json',
+                        type : 'post',
+                        data : parameters,
+                        url : baseURL + "/job/"+jobName+"/buildWithParameters"
+                    })
+                    return result;
+                }
+            }
+
+            async getBuild(buildURL){
+                if(!buildURL){
+                    return null;
+                }
+                let result = await $.ajax({
+                    dataType: 'json',
+                    url : buildURL + "/api/json"
+                })
+                return result;
+            }
+        }
+
+        let jenkins = new Jenkins();
+
+        async function inputChanged() {
+            $.xhrPool.abortAll();
+            $("#jobs").html("");
+            let jobList = window.jobList;
+            if(!jobList) {
+                jobList = await jenkins.listJobs();
+                window.jobList = jobList;
+            }
+            let text = this === window ? "" : $(this).val();
+            jobList.jobs.filter(job => job.name.match(new RegExp(text))).forEach(function (job) {
+                let jobLi = getJob(job);
+                $("#jobs").append(jobLi);
+                (async function (job, jobLi) {
+                    job.detail = await jenkins.getJob(job.name)
+                    job.detail.lastBuildDetail = await jenkins.getBuild(job.detail.lastBuild ? job.detail.lastBuild.url : null)
+                    setJob(job, jobLi);
+                    console.log(job);
+                })(job, jobLi);
+            })
+        }
+
+        inputChanged();
+
+        $(".input").focus().on("input", async function(){
+            await inputChanged.call(this);
+        });
+    });
+
+</script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Jenkins Config</title>
+    <style>
+        .input{
+            width: 100%;
+            height: 50px;
+            border: none;
+            outline: none;
+            font-size: 20px;
+        }
+        ul{
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .row{
+            display: inline-block;
+        }
+        a{
+            text-underline: none;
+            color: #453838;
+        }
+    </style>
+</head>
+<body>
+<div class="settings">
+<div class="setting">
+<input placeholder="jenkins url" class="input" name="jkUrl"/>
+<hr />
+<input placeholder="jenkins username(optional)" class="input" name="jkUsername"/>
+<hr />
+<input placeholder="jenkins password(optional)" class="input" name="jkPassword"/>
+</div>
+</div>
+<script>
+    let allDocs = utools.db.allDocs("jenkins");
+    console.log(allDocs)
+    let cloneSetting = $(".setting").clone();
+    if(allDocs.length > 1){
+        for(let i = 1;i < allDocs.length;i++){
+            let clS = cloneSetting.clone().appendTo($(".settings"));
+            clS.find("[name=jkUrl]").val(data.data.url);
+            clS.find("[name=jkUsername]").val(data.data.username);
+            clS.find("[name=jkPassword]").val(data.data.password);
+        }
+    }
+    if(allDocs.length > 0){
+        let data = allDocs[0];
+        let setting = $(".settings .setting");
+        setting.find("[name=jkUrl]").val(data.data.url);
+        setting.find("[name=jkUsername]").val(data.data.username);
+        setting.find("[name=jkPassword]").val(data.data.password);
+    }
+
+    $(".input").on("input", function(){
+        let setting = $(this).closest(".setting");
+        let url = setting.find("[name=jkUrl]").val();
+        let username = setting.find("[name=jkUsername]").val();
+        let password = setting.find("[name=jkPassword]").val();
+        let index = setting.index();
+        let value = utools.db.get("jenkins-"+index);
+        let data = {
+            _id : "jenkins-"+index,
+            data : {
+                url : url,
+                username : username,
+                password : password
+            },
+            _rev : value == null ? null : value._rev
+        };
+        data._rev || delete data._rev
+        utools.db.put(data);
+    })
+</script>
+</body>
+</html>
