@@ -27,11 +27,27 @@
             color: #453838;
             text-decoration: none;
         }
+
+        .setting{
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        .box11 {
+            border-radius: 10px;
+            margin: 10px;
+        }
+
+        .shadow {
+            position: relative;
+            box-shadow: 0px 1px 4px rgba(0,0,0,0.3),
+            0px 0px 20px rgba(0,0,0,0.1) inset;
+        }
     </style>
 </head>
 <body>
 <div class="settings">
-    <div class="setting">
+    <div class="setting box11 shadow">
         <input placeholder="jenkins url" class="input" name="jkUrl"/>
         <hr/>
         <input placeholder="jenkins username(optional)" class="input" name="jkUsername"/>
