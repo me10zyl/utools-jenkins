@@ -4,9 +4,9 @@
 + 使用 `jk` 或者 `jenkins` 来搜索jenkins的job
 
 搜索jenkins页面
-![jk](jk.png)
+![jk](https://raw.githubusercontent.com/me10zyl/utools-jenkins/master/jk.png)
 设置jenkins页面
-![jk-config](jk-config.png)
+![jk-config](https://raw.githubusercontent.com/me10zyl/utools-jenkins/master/jk-config.png)
 ----
 
 持续更新中...   
