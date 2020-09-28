@@ -17,11 +17,10 @@
         margin: 0;
     }
     .row{
-        display: inline-block;
+
     }
     a{
         text-underline: none;
-
         color: #453838;
     }
 
@@ -31,6 +30,17 @@
 
     .active:before{
         content: "*";
+    }
+
+
+    .job{
+        justify-content: flex-start;
+        display: flex;
+        flex-wrap: nowrap;
+        flex-direction: row;
+        white-space: nowrap;
+        text-overflow : ellipsis;
+        overflow: hidden;
     }
 </style>
 </head>
@@ -49,12 +59,15 @@
 </ul>
 </div>
 <li id="clone" style="display: none" class="job">
-    <div class="row" style="width: 50%">
+    <div class="row" style="min-width: 40%; width:40%;white-space: nowrap;text-overflow : ellipsis;overflow: hidden">
         <img class="jobColor" width="16" height="16"/>
         <a href="javascript:void(0)" target="_blank" class="jobName">HelloWorld</a>
     </div>
-    <div class="row" style="width: 30%;margin-left:10px;margin-right: 10px">
+    <div class="row" style="width: 140px;margin-left: 10px">
         <span class="lastBuildTime">N/A</span>
+    </div>
+    <div class="row" style="width: 40%;white-space: nowrap;text-overflow : ellipsis;overflow: hidden;margin-left: 10px">
+        <span class="lastChange"></span>
     </div>
    <!-- <div class="jobBtns row" style="width: 20%">
         <img style="width: 16px; height: 16px; margin-right: 2px;margin-top: 1px" class="buildImg" />
@@ -113,7 +126,7 @@
 
         function getJob(job){
             let jobLi = $("#clone").clone().removeAttr("id").removeAttr("style");
-            jobLi.find(".jobName").text(job.name).prop("href", job.url).click(function(){
+            jobLi.find(".jobName").text(job.name).attr("title", job.name).prop("href", job.url).click(function(){
                 utools.shellOpenExternal(job.url);
             });
             let colorPng = baseURL + "/static/68283e49/images/16x16/"+job.color+".png";
@@ -136,6 +149,11 @@
                 let colorPng = baseURL + "/static/68283e49/images/16x16/"+job.color+".png";
                 if(job.color == 'blue_anime'){
                     colorPng = baseURL + "/static/68283e49/images/16x16/"+job.color+".gif";
+                }
+                if(lastBuild.changeSet && lastBuild.changeSet.items.length > 0){
+                    let lastmsg = lastBuild.changeSet.items[lastBuild.changeSet.items.length-1];
+                    let e = lastmsg.msg+" (" + lastmsg.authorEmail +  ")";
+                    jobLi.find(".lastChange").text(e).attr("title", e)
                 }
                 jobLi.find(".jobColor").prop("src", colorPng)
             }
@@ -201,7 +219,7 @@
                     job.detail = await jenkins.getJob(job.name)
                     job.detail.lastBuildDetail = await jenkins.getBuild(job.detail.lastBuild ? job.detail.lastBuild.url : null)
                     setJob(job, jobLi);
-                    //console.log(job);
+                    console.log(job);
                 })(job, jobLi);
             })
         }
