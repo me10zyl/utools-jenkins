@@ -3,6 +3,10 @@
 + 使用 `jk-set` 来设置jenkins的URL, 用户名密码(可选)
 + 使用 `jk` 来搜索jenkins的job
 
+搜索jenkins页面
+![jk](jk.png)
+设置jenkins页面
+![jk-config](jk-config.png)
 ----
 
 持续更新中...   

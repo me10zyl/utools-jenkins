@@ -49,6 +49,10 @@
     </div>-->
 </li>
 <script>
+    function setting(){
+        loadConfigPage();
+    }
+
     utools.onPluginReady(function(){
         let config = utools.db.get('jenkins-0');
         let baseURL = config && config.data ? config.data.url : null;
@@ -65,7 +69,6 @@
         }
         $.ajaxSetup({
             beforeSend: function(jqXHR) {
-                console.log('beforeSend')
                 $.xhrPool.push(jqXHR);
                 jqXHR.setRequestHeader ("Authorization", "Basic " + btoa(username + ":" + password));
             }, //  annd connection to list
@@ -77,10 +80,6 @@
 
 
         console.log(baseURL, username, password);
-
-        function setting(){
-            loadConfigPage();
-        }
 
         function getJob(job){
             let jobLi = $("#clone").clone().removeAttr("id").removeAttr("style");
