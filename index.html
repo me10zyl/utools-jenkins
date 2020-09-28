@@ -24,12 +24,25 @@
 
         color: #453838;
     }
+
+    .jk-conf{
+        display: block;
+    }
+
+    .active:before{
+        content: "*";
+    }
 </style>
 </head>
 <body>
 <input class="input" placeholder="JOB名称"/>
-<a href="javascript:void(0)" onclick="setting()">Jenkins设置</a>
-<span id="jenkinsURL"></span>
+<a href="javascript:void(0)" onclick="setting()" style="text-decoration: none">Jenkins设置</a>
+<span id="jenkinsURL">
+    <span class="jk-conf" style="display: none">
+        <a class="url" href="javascript:void(0)"></a>
+        <span class="activeSpan"></span>
+    </span>
+</span>
 <hr/>
 <div style="overflow: auto">
 <ul id="jobs">
@@ -54,10 +67,27 @@
     }
 
     utools.onPluginReady(function(){
-        let config = utools.db.get('jenkins-0');
-        let baseURL = config && config.data ? config.data.url : null;
-        let username = config && config.data ? config.data.username : null;
-        let password = config && config.data ? config.data.password : null;
+        let active = utools.db.get("active");
+        if(!active){
+            active = "0";
+            utools.db.put({
+                "_id": "active",
+                "data": active
+            })
+        }else {
+            active = active.data;
+        }
+
+        function getFromDB() {
+            let config = utools.db.get('jenkins-' + active);
+            console.log('active', active, config)
+            let baseURL = config && config.data ? config.data.url : null;
+            let username = config && config.data ? config.data.username : null;
+            let password = config && config.data ? config.data.password : null;
+            return {baseURL, username, password};
+        }
+
+        let {baseURL, username, password} = getFromDB();
 
         $.xhrPool = [];
         $.xhrPool.abortAll = function() {
@@ -181,6 +211,57 @@
         $(".input").focus().on("input", async function(){
             await inputChanged.call(this);
         });
+
+
+        let allDocs = utools.db.allDocs("jenkins");
+        let jkClone = $(".jk-conf").clone();
+        $(".jk-conf").remove();
+        for (let i = 0; i < allDocs.length; i++) {
+            let data = allDocs[i];
+            let jk = jkClone.clone().removeAttr("id").removeAttr("style").appendTo($("#jenkinsURL"));
+            jk.find(".url").text(data.data.url).click(function(){
+                let index = $(this).closest(".jk-conf").index();
+                $("#jenkinsURL").find(".activeSpan").each(function(i1){
+                    if(self === $(this)){
+                        index = i1;
+                        console.log("index", i1)
+                        return false;
+                    }
+                    return true;
+                })
+                active = index + "";
+               console.log('click active ', active)
+               let exist = utools.db.get("active");
+               if(!exist) {
+                   utools.db.put({
+                       "_id": "active",
+                       "data": active
+                   })
+               }else{
+                   utools.db.put({
+                       "_id": "active",
+                       "data": active,
+                       "_rev" : exist._rev
+                   })
+               }
+               renderActive();
+
+                let fromDB = getFromDB();
+                console.log('fromdb', fromDB)
+                baseURL = fromDB.baseURL;
+                username = fromDB.username;
+                password = fromDB.password;
+                jobList = null;
+                inputChanged();
+            });
+        }
+
+        function renderActive(){
+            $(".activeSpan").removeClass("active");
+            $(".activeSpan").eq(parseInt(active)).addClass('active');
+        }
+
+        renderActive();
     });
 
 </script>
