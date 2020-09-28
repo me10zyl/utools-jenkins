@@ -4,13 +4,10 @@
 + 使用 `jk` 或者 `jenkins` 来搜索jenkins的job
 
 搜索jenkins页面
-![jk](https://raw.githubusercontent.com/me10zyl/utools-jenkins/master/jk.png)
+![jk](https://ftp.bmp.ovh/imgs/2020/09/4b0c4ba5eba88ea2.png)
 设置jenkins页面
-![jk-config](https://raw.githubusercontent.com/me10zyl/utools-jenkins/master/jk-config.png)
+![jk-config](https://ftp.bmp.ovh/imgs/2020/09/63035699b71fd30f.png)
 ----
-
-持续更新中...   
-
 还暂时未加入,但有开发计划的功能:
 1. 可直接构建或参数化构建项目
 2. 随时查看构建进度
