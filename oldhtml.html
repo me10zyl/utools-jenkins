@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="jquery.min.js"></script>
+  <script src="moment.min.js"></script>
+  <script src="director.min.js"></script>
+  <script src="vue.js"></script>
+
+  <style>
+    .input {
+      width: 100%;
+      height: 50px;
+      border: none;
+      outline: none;
+      font-size: 20px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .row {
+
+    }
+
+    a {
+      text-underline: none;
+      color: #453838;
+    }
+
+    .jk-conf {
+      display: block;
+    }
+
+    .active:before {
+      content: "*";
+    }
+
+
+    .job {
+      justify-content: flex-start;
+      display: flex;
+      flex-wrap: nowrap;
+      flex-direction: row;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    #cloneSetting {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+<div>
+  <div>
+    <section data-route="index" id="index">
+      <input class="input" placeholder="JOB名称"/>
+      <a href="javascript:void(0)" id="jenkinsSetting" v-on:click="clickSetting" style="text-decoration: none">Jenkins设置</a>
+      <span id="jenkinsURL">
+            <span class="jk-conf" v-for="config in realConfigList">
+                <a class="url" href="javascript:void(0)">{{config.url}}</a>
+                <span></span>
+             </span>
+             </span>
+      <hr/>
+      <div style="overflow: auto">
+        <ul id="jobs">
+          <li class="job" v-for="job in jobList">
+            <div class="row"
+                 style="min-width: 40%; width:40%;white-space: nowrap;text-overflow : ellipsis;overflow: hidden">
+              <img class="jobColor" width="16" height="16"/>
+              <a href="javascript:void(0)" target="_blank" class="jobName">HelloWorld</a>
+            </div>
+            <div class="row" style="width: 140px;margin-left: 10px">
+              <span class="lastBuildTime">N/A</span>
+            </div>
+            <div class="row"
+                 style="width: 40%;white-space: nowrap;text-overflow : ellipsis;overflow: hidden;margin-left: 10px">
+              <span class="lastChange"></span>
+            </div>
+            <!-- <div class="jobBtns row" style="width: 20%">
+                 <img style="width: 16px; height: 16px; margin-right: 2px;margin-top: 1px" class="buildImg" />
+                 <a class="build" href="javascript:void(0)">构建</a>
+             </div>-->
+          </li>
+        </ul>
+      </div>
+    </section>
+    <style>
+      .input {
+        width: 100%;
+        height: 50px;
+        border: none;
+        outline: none;
+        font-size: 20px;
+      }
+
+      ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .row {
+        display: inline-block;
+      }
+
+      a {
+        text-underline: none;
+        color: #453838;
+        text-decoration: none;
+      }
+
+      .setting {
+        padding: 10px;
+        font-size: 16px;
+      }
+
+      .box11 {
+        border-radius: 10px;
+        margin: 10px;
+      }
+
+      .shadow {
+        position: relative;
+        box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.3),
+        0px 0px 20px rgba(0, 0, 0, 0.1) inset;
+      }
+    </style>
+    <section data-route="config" id="config">
+      <div class="settings">
+        <div class="setting box11 shadow" v-for="(config, index) in configList">
+          <input placeholder="jenkins url" class="input" name="jkUrl" v-model="config.data.url"
+                 v-on:input="bindInput(config, index)"/>
+          <hr/>
+          <input placeholder="jenkins username(optional)" class="input" name="jkUsername"
+                 v-model="config.data.username" v-on:input="bindInput(config, index)"/>
+          <hr/>
+          <input placeholder="jenkins password(optional)" class="input" name="jkPassword"
+                 v-model="config.data.password" v-on:input="bindInput(config, index)"/>
+        </div>
+      </div>
+      <div>
+        <a href="javascript:void(0)" id="sub" v-on:click="subConf" style="float: right;display: block;width: 70px">减少配置</a>
+        <a href="javascript:void(0)" id="add" v-on:click="addConf" style="float: right;display: block;width: 70px">增加配置</a>
+        <a href="javascript:void(0)" id="returnBack" v-on:click="returnBack"
+           style="float: right;display: block;width: 140px">返回Jenkins搜索</a>
+      </div>
+    </section>
+  </div>
+  <script>
+
+
+    let utils = {
+      getConfigList : function(){
+        if(window.alldata.configList.length === 0) {
+          let allDocs = utools.db.allDocs("jenkins");
+          if (allDocs.length > 0) {
+            for (let i = 0; i < allDocs.length; i++) {
+              let data = allDocs[i];
+              window.alldata.configList.push(data);
+            }
+          }else{
+            window.alldata.configList.push({
+              _id: '',
+              data: {
+                url: null,
+                username: null,
+                password: null
+              }
+            });
+          }
+        }
+        if(window.alldata.configList.length === 1 && window.alldata.configList[window.alldata.configList.length-1]._id===''){
+          return [];
+        }
+        return window.alldata.configList;
+      }
+    }
+
+
+
+
+
+
+    function config() {
+      utils.getConfigList();
+    }
+
+    function initRoutes() {
+      console.log('init routes')
+      var allroutes = function () {
+        console.log('all routes')
+        var route = window.location.hash.slice(2);
+        console.log(route)
+        var sections = $('section');
+        var section;
+        section = sections.filter('[data-route=' + route + ']');
+        if (section.length) {
+          sections.hide();
+          section.show();
+        }
+      }
+      var routes = {
+        '/index': index,
+        '/config': config
+      };
+      var router = Router(routes);
+      window.router = router;
+      router.configure({
+        on: allroutes
+      });
+      router.init();
+    }
+
+    function initVue() {
+      console.log('invoking vue')
+      window.vue = new Vue({
+        el: '#config',
+        data: window.alldata,
+        computed : {
+
+        },
+        mounted : function () {
+          console.log('mounted!')
+          initRoutes();
+        },
+        methods: {
+          onInput: function (conf, index) {
+            let value = utools.db.get("jenkins-" + index);
+            let data = {
+              _id: "jenkins-" + index,
+              data: {
+                url: conf.data.url,
+                username: conf.data.username,
+                password: conf.data.password
+              },
+              _rev: value == null ? null : value._rev
+            };
+            data._rev || delete data._rev
+            utools.db.put(data);
+          },
+          subConf: function () {
+            console.log(alldata.configList.length)
+            let lastIndex = alldata.configList.length - 1;
+            alldata.configList.splice(lastIndex, 1);
+            utools.db.remove("jenkins-" + lastIndex);
+          },
+          addConf: function () {
+            alldata.configList.push({
+              _id: '',
+              data: {
+                url: null,
+                username: null,
+                password: null
+              }
+            })
+          },
+          returnBack: function () {
+            utools.redirect('jenkins', '')
+          }
+        }
+      })
+    }
+
+    function initialize() {
+      initVue();
+      utools.onPluginEnter(function ({code, type, payload, optional}) {
+        try {
+          console.log('plugin enter')
+          if (code == 'jenkins') {
+            window.location.hash = '/index';
+          } else if (code == 'jenkins-set') {
+            window.location.hash = '/config';
+            console.log('enter config')
+          }
+        }catch (e) {
+          console.error(e)
+        }
+      });
+    }
+    initialize();
+  </script>
+</div>
+</body>
+</html>
