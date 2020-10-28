@@ -111,7 +111,7 @@
         if(!this.configList || this.configList.length === 0){
           return null;
         }
-        console.log('gen jenkins', this.configList)
+        console.log('configList jenkins', this.configList)
         let activeConf = this.configList.filter(e => e.data.active)[0];
         let jk = new Jenkins(activeConf.data.url);
         this.jenkins = jk;
@@ -164,8 +164,14 @@
       setJobList: async function () {
         console.log('set job list')
         let {url, username, password} = this.getAuth();
-        let jobs = await this.jenkins.listJobs();
-
+        let jobs = {
+          jobs : []
+        };
+        try {
+          jobs = await this.jenkins.listJobs()
+        }catch (e) {
+          console.error(e)
+        }
         for(let job of jobs.jobs){
           job.lastBuildTime = 'N/A';
           let colorPng = url + "/static/68283e49/images/16x16/" + job.color + ".png";
