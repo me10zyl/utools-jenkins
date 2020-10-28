@@ -43,17 +43,18 @@
   import moment from "moment"
   import {ThreadPool} from "../js/classutil";
   let utools = window.utools ? window.utools : utools_dev;
-  let confList = [];
+  console.log(utools)
+  /*let confList = [];
   utools.onPluginReady(()=>{
-    for(let conf of utils.getConfigList()){
+    for(let conf of ){
       confList.push(conf);
     }
-  })
+  })*/
   export default {
     name: 'Jenkins',
     data() {
       return {
-        configList: confList,
+        configList: utils.getConfigList(),
         jobList: [],
         filterValue: ''
       }
@@ -62,25 +63,18 @@
       filterJobList: function () {
         let filter = this.jobList.filter(e => e.name.match(this.filterValue));
         return filter;
-      },
-      jenkins : function(){
-        if(this.configList.length == 0){
-          return null;
-        }
-        let activeConf = this.configList.filter(e => e.data.active)[0];
-        let jk = new Jenkins(activeConf.data.url);
-        return jk;
       }
     },
     watch: {
       filterValue : {
         handler : function(){
-
         }
       },
       configList: {
         handler: function (val) {
-           this.setJobList()
+          if(this.getJenkins()) {
+            this.setJobList()
+          }
         },
         deep: true
       }
@@ -108,9 +102,21 @@
           if (i > -1) $.xhrPool.splice(i, 1); //  removes from list by index
         }
       });
-      //this.setJobList();
+      if(this.getJenkins()) {
+        this.setJobList();
+      }
     },
     methods: {
+      getJenkins: function () {
+        if(!this.configList || this.configList.length === 0){
+          return null;
+        }
+        console.log('gen jenkins', this.configList)
+        let activeConf = this.configList.filter(e => e.data.active)[0];
+        let jk = new Jenkins(activeConf.data.url);
+        this.jenkins = jk;
+        return this.jenkins;
+      },
       onInputSearch : function(){
         $.xhrPool.abortAll();
         this.syncJobDetail(this.filterValue);

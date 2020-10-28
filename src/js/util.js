@@ -35,6 +35,7 @@ let utils = {
     if(window.alldata.configList.length === 1 && window.alldata.configList[window.alldata.configList.length-1]._id===''){
       return [];
     }*/
+    console.log('alldata', alldata)
     return alldata;
   }
 }
