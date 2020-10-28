@@ -1,3 +1,4 @@
+import * as mock from './mock.json'
 export default {
   onPluginEnter : function(){
 
@@ -10,9 +11,7 @@ export default {
 
     },
     allDocs : function (key) {
-      return [
-
-      ]
+      return mock.mock_config_list;
     }
   }
 }
