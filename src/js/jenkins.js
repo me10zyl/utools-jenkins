@@ -9,11 +9,20 @@ class Jenkins {
     }
   }
 
-  async listJobs() {
+  async listJobs(url) {
+    console.log('listJobs', url)
     let result = await $.ajax({
       dataType: 'json',
-      url: this.baseURL + "/api/json"
+      url: (url ? url : this.baseURL) + "/api/json"
     })
+    for(let job of result.jobs){
+      if(job._class === 'com.cloudbees.hudson.plugins.folder.Folder'){
+          console.log('job url' , job.url)
+          let concatjobs = await this.listJobs(job.url);
+          console.log('concatjobs', concatjobs.jobs)
+          result.jobs = result.jobs.concat(concatjobs.jobs)
+      }
+    }
     return result;
   }
 
