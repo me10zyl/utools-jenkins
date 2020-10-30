@@ -1,7 +1,7 @@
 {
 	"pluginName": "jenkins",
 	"description": "jenkins插件, 可搜索jenkins 查看最后构建时间等",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"preload": "preload.js",
 	"main" : "index.html",
 	"logo": "jenkins.png",
