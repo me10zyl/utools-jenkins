@@ -170,7 +170,7 @@
     },
     methods: {
       onDoBuildJob: function (job) {
-        let {url, username, password} = thus.getAuth();
+        let {url, username, password} = this.getAuth();
         let auth = "Basic " + btoa(username + ":" + password);
         this.buildDialog = false;
         let isParam = job.actions && job.actions[0] && job.actions[0]._class === 'hudson.model.ParametersDefinitionProperty';
