@@ -170,9 +170,11 @@
     },
     methods: {
       onDoBuildJob: function (job) {
+        let {url, username, password} = thus.getAuth();
+        let auth = "Basic " + btoa(username + ":" + password);
         this.buildDialog = false;
         let isParam = job.actions && job.actions[0] && job.actions[0]._class === 'hudson.model.ParametersDefinitionProperty';
-        this.jenkins.buildJob(job.name, isParam ? job.form : null);
+        this.jenkins.buildJob(job.name, isParam ? job.form : null, auth);
         (async ()=>{
           job.color = await this.jenkins.getJobColor(job.name);
           this.updateJobColor(job, true);

@@ -42,7 +42,7 @@ class Jenkins {
     return result.color;
   }
 
-  async buildJob(jobName, parameters) {
+  async buildJob(jobName, parameters, authString) {
     let httpRequest = new XMLHttpRequest();
     if (parameters != null) {
       let string = "";
@@ -56,6 +56,7 @@ class Jenkins {
     }else {
       httpRequest.open('POST', this.baseURL + "/job/" + jobName + "/build", true);
     }
+    httpRequest.setRequestHeader("Authorization", authString)
     httpRequest.setRequestHeader( "content-type", "application/x-www-form-urlencoded")
     httpRequest.send();
   }
