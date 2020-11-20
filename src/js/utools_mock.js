@@ -1,4 +1,4 @@
-import * as mock from './mock.json'
+//import * as mock from './mock.json'
 export default {
   onPluginEnter : function(){
 
