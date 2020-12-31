@@ -6,6 +6,9 @@
 	"main" : "index.html",
 	"logo": "jenkins.png",
 	"homepage" : "https://github.com/me10zyl/utools-jenkins",
+  "development" : {
+    "main" : "http://127.0.0.1:8081/index.html"
+  },
 	"features": [
 		{
 		  "code": "jenkins",

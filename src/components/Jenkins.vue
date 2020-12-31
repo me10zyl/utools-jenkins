@@ -86,14 +86,14 @@
 
 <script>
   import utils from "../js/util";
-  import utools_dev from "../js/utools_mock";
+  //import utools_dev from "../js/utools_mock";
   import Jenkins from "../js/jenkins";
   import $ from "jquery"
   import moment from "moment"
   import {ThreadPool} from "../js/classutil";
 
-  let utools = window.utools ? window.utools : utools_dev;
-  console.log(utools)
+  //let utools = window.utools ? window.utools : utools_dev;
+  console.log("utools:", utools)
   /*let confList = [];
   utools.onPluginReady(()=>{
     for(let conf of ){
