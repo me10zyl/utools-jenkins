@@ -62,7 +62,7 @@
                           v-model="currentJob.form[param.name]">
                     <option v-for="choice in param.choices">{{choice}}</option>
                   </select>
-                  <input v-if="param.type==='TextParameterDefinition'" v-model="currentJob.form[param.name]"/>
+                  <input v-if="param.type==='TextParameterDefinition'||param.type==='StringParameterDefinition'" v-model="currentJob.form[param.name]"/>
                   <select v-if="param._class==='net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition'" size="5"
                           v-model="currentJob.form[param.name]">
                       <option v-for="choice in param.choices">{{choice}}</option>
