@@ -63,6 +63,10 @@
                     <option v-for="choice in param.choices">{{choice}}</option>
                   </select>
                   <input v-if="param.type==='TextParameterDefinition'" v-model="currentJob.form[param.name]"/>
+                  <select v-if="param._class==='net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition'" size="5"
+                          v-model="currentJob.form[param.name]">
+                      <option v-for="choice in param.choices">{{choice}}</option>
+                  </select>
                 </td>
               </tr>
               <tr>
@@ -221,16 +225,40 @@
          }
        }
       },
+      handleGitParameter: async function(job,param){
+        if(param._class==='net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition'){
+          let crumb =  await this.jenkins.getJenkinsCrumb(job.name);
+        /*  var parser = new DOMParser();
+          var htmlDoc = parser.parseFromString(jobHtml, 'text/html');
+          let $jobHtml = $(htmlDoc);*/
+          // console.log('html', $jobHtml)
+          let crumbValue =  crumb.crumb;
+          let crumbHeader = crumb.crumbRequestField;
+          console.log('crumb header', crumbHeader);
+          console.log('crumb value', crumbValue);
+          let headers = {};
+          headers[crumbHeader] = crumbValue;
+          let result = await $.ajax({
+            headers : headers,
+            url : job.url + '/descriptorByName/net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition/fillValueItems?param=' + param.name,
+            dataType : 'json',
+            type : 'post'
+          })
+          console.log('git parameter', result)
+
+        }
+      },
       onClickBuildJob: async function (job) {
         if (!job.form) {
           job.form = {}
         }
         let data = await this.jenkins.getJob(job.name);
         job = $.extend(job, data);
-        console.log(job)
+        console.log('job',job)
         if (job.actions && job.actions.length > 0 && job.actions[0]._class === 'hudson.model.ParametersDefinitionProperty') {
           for (let param of job.actions[0].parameterDefinitions) {
-            job.form[param.name] = param.defaultParameterValue.value;
+            job.form[param.name] = param.defaultParameterValue ?  param.defaultParameterValue.value : '';
+            this.handleGitParameter(job,param)
           }
         }
         this.buildDialog = true;

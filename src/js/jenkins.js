@@ -34,6 +34,13 @@ class Jenkins {
     return result;
   }
 
+  async getJenkinsCrumb(jobName){
+    let result = await $.ajax({
+      url: this.baseURL + "/crumbIssuer/api/json"
+    })
+    return result;
+  }
+
   async getJobColor(jobName){
     let result = await $.ajax({
       dataType: 'json',
