@@ -46,13 +46,13 @@
       width="80%"
     >
       <div
-        v-if="currentJob.actions && currentJob.actions[0] && currentJob.actions[0]._class==='hudson.model.ParametersDefinitionProperty'">
+        v-if="currentJob.property && currentJob.property.filter(e=>e._class==='hudson.model.ParametersDefinitionProperty').length>0">
         <div>
           参数化构建：
         </div>
         <div>
           <table style="margin-top: 10px">
-            <template v-for="param in currentJob.actions[0].parameterDefinitions">
+            <template v-for="param in currentJob.property.filter(e=>e._class==='hudson.model.ParametersDefinitionProperty')[0].parameterDefinitions">
               <tr>
                 <td>
                   <label>{{param.name}}</label>
@@ -255,8 +255,8 @@
         let data = await this.jenkins.getJob(job.name);
         job = $.extend(job, data);
         console.log('job',job)
-        if (job.actions && job.actions.length > 0 && job.actions[0]._class === 'hudson.model.ParametersDefinitionProperty') {
-          for (let param of job.actions[0].parameterDefinitions) {
+        if (job.property && job.property.filter(e=>e._class==='hudson.model.ParametersDefinitionProperty').length > 0) {
+          for (let param of job.property.filter(e=>e._class==='hudson.model.ParametersDefinitionProperty')[0].parameterDefinitions) {
             job.form[param.name] = param.defaultParameterValue ?  param.defaultParameterValue.value : '';
             this.handleGitParameter(job,param)
           }
@@ -334,6 +334,7 @@
       },
       setJobList: async function () {
         console.log('set job list')
+        this.jobList = []
         let {url, username, password} = this.getAuth();
         let jobs = {
           jobs: []
