@@ -34,30 +34,4 @@ async function nodejsReq(url, method, headers) {
   });
 }
 
-//window.nodeJsReq = nodejsReq
-
-
-  //for test
- /* (async (nodeJsReq) => {
-    const headers_ = {
-      "Authorization": "Basic " + "YWRtaW46YWRtaW4=",
-      "Content-Type": "application/json;charset=utf-8"
-    }
-    const url = "http://localhost:8080/jenkins/crumbIssuer/api/json"
-    const crumb = await nodeJsReq(url, "GET", headers_)
-    console.log('crumb return:', crumb)
-    let crumbJson = JSON.parse(crumb.data);
-    let crumbValue = crumbJson.crumb;
-    let crumbHeader = crumbJson.crumbRequestField;
-    console.log('crumb header', crumbHeader);
-    console.log('crumb value', crumbValue);
-    const headers = {
-      "Cookie" :  [crumb.headers['set-cookie'][0].split(";")[0]],
-      "Jenkins-Crumb" : crumbValue,
-      "Authorization": "Basic " + "YWRtaW46YWRtaW4="
-    };
-    //headers[crumbHeader] = crumbValue;
-    let newurl = "http://localhost:8080/jenkins/job/test-job/descriptorByName/net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition/fillValueItems?param=tbranch";
-    const result = await nodeJsReq(newurl, "POST", headers)
-    console.log('git parameter', result)
-  })(nodejsReq)*/
+window.nodeJsReq = nodejsReq

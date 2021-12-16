@@ -1,4 +1,5 @@
 import $ from 'jquery'
+import ca from "element-ui/src/locale/lang/ca";
 
 class Jenkins {
 
@@ -26,7 +27,7 @@ class Jenkins {
           result.jobs = result.jobs.concat(concatjobs.jobs)
       }
     }
-    console.log('list jobs')
+    console.log('list jobs result:', url, result)
     return [url, result];
   }
 
@@ -43,15 +44,19 @@ class Jenkins {
       "Authorization" : "Basic " + btoa(this.username + ":" + this.password),
       "Content-Type" : "application/json;charset=utf-8"
     }
-    const url =  this.baseURL + "/crumbIssuer/api/json"
-    const crumb = await nodeJsReq(url, "GET", headers)
-    let crumbJson = JSON.parse(crumb.data);
-    let crumbValue =  crumbJson.crumb;
-    let crumbHeader = crumbJson.crumbRequestField;
-    Object.assign(headers, {
-      'Cookie' :  crumb.headers['set-cookie'][0].split(";")[0]
-    });
-    headers[crumbHeader] = crumbValue;
+    try {
+      const url = this.baseURL + "/crumbIssuer/api/json"
+      const crumb = await nodeJsReq(url, "GET", headers)
+      let crumbJson = JSON.parse(crumb.data);
+      let crumbValue = crumbJson.crumb;
+      let crumbHeader = crumbJson.crumbRequestField;
+      Object.assign(headers, {
+        'Cookie': crumb.headers['set-cookie'][0].split(";")[0]
+      });
+      headers[crumbHeader] = crumbValue;
+    }catch (e){
+      console.error('crumb error', e);
+    }
     let ret = await nodeJsReq(requestUrl, "POST", headers);
     console.log('crumb request result: with url ' + requestUrl, ret)
     return ret;
@@ -126,10 +131,15 @@ class Jenkins {
   }
 
   async getLastBuild(jobUrl) {
-    let result = await $.ajax({
+    let jqXHR = $.ajax({
       dataType: 'json',
       url: jobUrl + "/lastBuild/api/json"
-    })
+    });
+    if(!this.jqXHRList) {
+      this.jqXHRList = []
+    }
+    this.jqXHRList.push(jqXHR);
+    let result = await jqXHR
     return result;
   }
 

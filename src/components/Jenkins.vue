@@ -231,6 +231,7 @@
                job.interval = null;
                this.$set(job, 'progress', '');
                job.synced = false;
+               utools.showNotification(job.name + "已构建完成.")
              }
              console.log(job.progress);
            };
@@ -336,7 +337,18 @@
         return url;
       },
       setJobList: async function () {
-        console.log('set job list')
+        console.log('set job list', this.getCurrentJenkinsUrl())
+        //去掉请求
+        if(this.jenkins.jqXHRList){
+          for (let i = this.jenkins.jqXHRList.length - 1; i >= 0; i--) {
+            this.jenkins.jqXHRList[i].abort();
+          }
+          this.jenkins.jqXHRList.clear()
+        }
+        this.jobList.forEach(job=>{
+          clearInterval(job.interval);
+          job.interval = null;
+        })
         this.jobList = []
         let {url, username, password} = this.getAuth();
         let jobs = {
@@ -355,7 +367,9 @@
         }
         for (let job of jobs.jobs) {
           job.lastBuildTime = 'N/A';
-          this.updateJobColor(job);
+          (async()=>{
+            this.updateJobColor(job);
+          })()
         }
         this.jobList = jobs.jobs;
         await new Promise((r) => {
