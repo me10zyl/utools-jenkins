@@ -24,6 +24,7 @@
 4. 查看最后一次构建的git 日志描述
 5. 可配置多个jenkinsURL, 在主页面随意切换, 用于区分测试环境和生产环境的jenkins
 6. 修复一些jenkins版本无法显示构建参数的问题
+7. JOB构建完成时的系统提示
 
 # 关于支持的参数选择类型
 
@@ -32,6 +33,7 @@
 + CascadeChoiceParameter (级联选择器，暂不支持Groovy脚本)
 + TextParameterDefinition （文本输入框）
 + StringParameterDefinition (文本输入框）
++ GitParameterDefinition (Git分支选择插件)
 
 如果遇到未支持的参数组件，请在留言上标明jenkins的版本，参数组件的类型。
 
@@ -42,6 +44,7 @@
 + v0.0.3 新增构建功能，支持无参构建和部分有参构建（文本和选择），新增构建进度展示和增加刷新按钮
 + v0.0.4 修复构建时未授权的BUG
 + v0.0.5 修复有些jenkins版本的参数化构建选项无法显示问题，优化切换配置时jobList的显示效果
++ v0.0.6 现已支持带csrf保护的jenkins的构建，增加构建完成时的系统提示，修复git分支选择插件显示问题，优化构建时图标问题和其他一些BUG，优化切换jenkins时的请求
 
 # 无法使用的一些建议
 
