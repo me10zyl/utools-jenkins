@@ -29,7 +29,7 @@
             <span class="lastChange" v-bind:title="job.lastChange">{{job.lastChange}}</span>
           </div>
           <div class="row" style="margin-right: 10px">
-            {{job.progress ? job.progress + '%' : job.progress }}
+            {{job.progress != null && parseInt(job.progress) >= 0 ? job.progress + '%' : job.progress }}
           </div>
           <div class="jobBtns row" style="width: 20%">
             <img style="width: 16px; height: 16px; margin-right: 2px;margin-top: 1px" class="buildImg"
@@ -65,7 +65,7 @@
                   <input v-if="param.type==='TextParameterDefinition'||param.type==='StringParameterDefinition'" v-model="currentJob.form[param.name]"/>
                   <select v-if="param._class==='net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition'" size="5"
                           v-model="currentJob.form[param.name]">
-                      <option v-for="choice in param.choices">{{choice}}</option>
+                      <option v-for="choice in param.choices" :value="choice.value">{{choice.name}}</option>
                   </select>
                 </td>
               </tr>
@@ -177,12 +177,13 @@
         let {url, username, password} = this.getAuth();
         let auth = "Basic " + btoa(username + ":" + password);
         this.buildDialog = false;
-        let isParam = job.actions && job.actions[0] && job.actions[0]._class === 'hudson.model.ParametersDefinitionProperty';
+        let isParam = job.property.filter(e=>e._class==='hudson.model.ParametersDefinitionProperty').length > 0; //job.actions && job.actions[0] && job.actions[0]._class === 'hudson.model.ParametersDefinitionProperty';
         this.jenkins.buildJob(job.name, isParam ? job.form : null, auth);
         (async ()=>{
           job.color = await this.jenkins.getJobColor(job.name);
           this.updateJobColor(job, true);
         })()
+        //this.onclickRefresh()
       },
       onclickRefresh : function(){
         this.filterJobList.forEach(async job=>{
@@ -205,47 +206,48 @@
       updateJobColor: function (job, check) {
        if(this.setJobColorUrl(job) || check){
          if (!job.interval || check) {
-           job.interval = setInterval(async () => {
-             job.color = await this.jenkins.getJobColor(job.name);
-             this.setJobColorUrl(job);
+           let handler = async () => {
+             console.log('do interval')
              let progress = await this.jenkins.getProgress(job.name);
+             if(progress === 0) {
+               //刚构建的时候的特殊处理
+               let colorUrl = await this.jenkins.getAjaxJobColorSrc(job.name);
+               if(job.colorUrl) {
+                 job.colorUrl = colorUrl;
+               }
+             }else{
+               job.color = await this.jenkins.getJobColor(job.name);
+               this.setJobColorUrl(job);
+             }
              this.$set(job, 'progress', progress);
              if(progress > 0 && !job.synced){
                this.syncJobDetailNow(job);
                job.synced = true;
              }
-             if (!job.color || !job.color.match(/anime/)) {
+             //!job.color || !job.color.match(/anime/)
+             //const isBuilding = await this.jenkins.isBuildDone(job.name)
+             if (progress === -1) {
                clearInterval(job.interval);
                job.interval = null;
                this.$set(job, 'progress', '');
                job.synced = false;
              }
              console.log(job.progress);
-           }, 5000);
+           };
+           job.interval = setInterval(handler, 5000);
+           handler();
          }
        }
       },
+      //var parser = new DOMParser();
+      //var htmlDoc = parser.parseFromString(jobHtml, 'text/html');
+      //let $jobHtml = $(htmlDoc);
       handleGitParameter: async function(job,param){
         if(param._class==='net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition'){
-          let crumb =  await this.jenkins.getJenkinsCrumb(job.name);
-        /*  var parser = new DOMParser();
-          var htmlDoc = parser.parseFromString(jobHtml, 'text/html');
-          let $jobHtml = $(htmlDoc);*/
-          // console.log('html', $jobHtml)
-          let crumbValue =  crumb.crumb;
-          let crumbHeader = crumb.crumbRequestField;
-          console.log('crumb header', crumbHeader);
-          console.log('crumb value', crumbValue);
-          let headers = {};
-          headers[crumbHeader] = crumbValue;
-          let result = await $.ajax({
-            headers : headers,
-            url : job.url + '/descriptorByName/net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition/fillValueItems?param=' + param.name,
-            dataType : 'json',
-            type : 'post'
-          })
-          console.log('git parameter', result)
-
+          const result = await this.getJenkins().crumbRequest( job.url + '/descriptorByName/net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition/fillValueItems?param=' + param.name)
+          let data = JSON.parse(result.data);
+          this.$set(param, "choices", data.values);
+          console.log('git parameter', data)
         }
       },
       onClickBuildJob: async function (job) {
@@ -254,11 +256,11 @@
         }
         let data = await this.jenkins.getJob(job.name);
         job = $.extend(job, data);
-        console.log('job',job)
+        console.log('current job',job)
         if (job.property && job.property.filter(e=>e._class==='hudson.model.ParametersDefinitionProperty').length > 0) {
           for (let param of job.property.filter(e=>e._class==='hudson.model.ParametersDefinitionProperty')[0].parameterDefinitions) {
             job.form[param.name] = param.defaultParameterValue ?  param.defaultParameterValue.value : '';
-            this.handleGitParameter(job,param)
+            await this.handleGitParameter(job,param)
           }
         }
         this.buildDialog = true;
@@ -270,7 +272,8 @@
         }
         console.log('configList jenkins', this.configList)
         let activeConf = this.configList.filter(e => e.data.active)[0];
-        let jk = new Jenkins(activeConf.data.url);
+        let auth = this.getAuth();
+        let jk = new Jenkins(activeConf.data.url, auth.username, auth.password);
         this.jenkins = jk;
         return this.jenkins;
       },
@@ -339,10 +342,16 @@
         let jobs = {
           jobs: []
         };
+        let baseurl = null;
         try {
-          jobs = await this.jenkins.listJobs()
+          let result = await this.jenkins.listJobs(this.getCurrentJenkinsUrl());
+          baseurl = result[0];
+          jobs = result[1];
         } catch (e) {
           console.error(e)
+        }
+        if(this.getCurrentJenkinsUrl() !== baseurl){
+          return;
         }
         for (let job of jobs.jobs) {
           job.lastBuildTime = 'N/A';
