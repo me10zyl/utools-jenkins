@@ -1,5 +1,7 @@
 # utools-jenkins
 
+用于快速搜索jenkins的job，可用于打开job的网页链接，点击构建，显示构建进度百分比。
+
 + 使用 `jk-set` 或者 `jenkins-set` 来设置jenkins的URL, 用户名密码(可选)
 + 使用 `jk` 或者 `jenkins` 来搜索jenkins的job
 
@@ -30,7 +32,6 @@
 + CascadeChoiceParameter (级联选择器，暂不支持Groovy脚本)
 + TextParameterDefinition （文本输入框）
 + StringParameterDefinition (文本输入框）
-+ GitParameterDefinition （git参数)
 
 如果遇到未支持的参数组件，请在留言上标明jenkins的版本，参数组件的类型。
 
@@ -47,8 +48,16 @@
 如果无法正常使用该插件，请尝试使用以下策略修复：
 
 1. jenkins使用http而不是https
-2. 检查jenkins配置中jenkins URL是否设置正确
+2. 检查jenkins的系统配置中jenkins URL是否设置正确
 3. 尝试关闭 jenkins Prevent CSRF
+
+
+# 二次开发
+
+```
+npm install
+npm run dev
+```
 
 # 提交BUG与建议
 

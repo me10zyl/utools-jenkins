@@ -384,6 +384,7 @@
     font-size: 20px;
   }
 
+
   ul {
     list-style: none;
     padding: 0;
@@ -398,6 +399,7 @@
     text-underline: none;
     color: #453838;
   }
+
 
   .jk-conf {
     display: block;
@@ -418,8 +420,42 @@
     overflow: hidden;
   }
 
+
   #cloneSetting {
     display: none;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    a {
+      text-underline: none;
+      color: #f8f5f5;
+    }
+
+    .input {
+      width: 100%;
+      height: 50px;
+      border: none;
+      outline: none;
+      font-size: 20px;
+      background-color: transparent;
+      caret-color: white;
+    }
+
+    .job {
+      justify-content: flex-start;
+      display: flex;
+      flex-wrap: nowrap;
+      flex-direction: row;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      color: white;
+    }
+
+    .active:before {
+      content: "*";
+      color: white;
+    }
   }
 
 </style>

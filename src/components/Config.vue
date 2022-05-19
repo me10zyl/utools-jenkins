@@ -104,6 +104,10 @@
     font-size: 20px;
   }
 
+  @media (prefers-color-scheme: dark) {
+
+  }
+
   ul {
     list-style: none;
     padding: 0;
@@ -134,5 +138,37 @@
     position: relative;
     box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.3),
     0px 0px 20px rgba(0, 0, 0, 0.1) inset;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .input {
+      width: 100%;
+      height: 50px;
+      border: none;
+      outline: none;
+      font-size: 20px;
+      background-color: transparent;
+      caret-color: white;
+      color: white;
+    }
+
+    .setting{
+      padding: 10px;
+      font-size: 16px;
+      border:1px solid white;
+    }
+
+    .shadow {
+      position: relative;
+      box-shadow: 0px 1px 4px rgba(255, 255, 255, 0.3),
+      0px 0px 20px rgba(255, 255, 255, 0.1) inset;
+    }
+
+    a {
+      text-underline: none;
+      color: white;
+      text-decoration: none;
+    }
+
   }
 </style>
